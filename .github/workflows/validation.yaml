@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Java
         uses: actions/setup-java@v5
@@ -42,4 +42,5 @@ jobs:
         run: flutter test
 
       - name: Build Android Debug APK
+        if: github.event_name == 'pull_request'
         run: flutter build apk --debug
