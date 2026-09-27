@@ -11,9 +11,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Lab 1',
-      theme: ThemeData(
-        colorScheme: .fromSeed(seedColor: Colors.black),
-      ),
+      theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.black)),
       home: const MyHomePage(title: 'Home Page'),
     );
   }
@@ -33,7 +31,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController _inputController = TextEditingController();
 
   int _counter = 0;
-  
+
   void _processInput() {
     final String inputValue = _inputController.text.trim();
 
@@ -43,7 +41,7 @@ class _MyHomePageState extends State<MyHomePage> {
           _counter = 0;
         } else {
           final int number = int.parse(inputValue);
-          _counter += number; 
+          _counter += number;
         }
       });
     }
@@ -73,10 +71,11 @@ class _MyHomePageState extends State<MyHomePage> {
               Text(
                 '$_counter',
                 style: const TextStyle(
-                  fontSize: 80, fontWeight: FontWeight.bold
+                  fontSize: 80,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-              
+
               TextFormField(
                 controller: _inputController,
                 decoration: const InputDecoration(
@@ -98,18 +97,16 @@ class _MyHomePageState extends State<MyHomePage> {
                   return 'Only integers or "Avada Kedavra" are allowed.';
                 },
               ),
-        
+
               ElevatedButton(
                 onPressed: _processInput,
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 40, vertical: 10
+                    horizontal: 40,
+                    vertical: 10,
                   ),
                 ),
-                child: const Text(
-                  'Enter',
-                  style: TextStyle(fontSize: 25),
-                ),
+                child: const Text('Enter', style: TextStyle(fontSize: 25)),
               ),
             ],
           ),
