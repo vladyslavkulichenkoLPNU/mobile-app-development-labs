@@ -79,20 +79,27 @@ class HomeScreen extends StatelessWidget {
             ),
           ],
         ),
-        body: ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: routines.length,
-          itemBuilder: (context, index) {
-            final routine = routines[index];
-            return RoutineCard(
-              time: routine['time']!,
-              title: routine['title']!,
-              subtitle: routine['subtitle']!,
-              icon: _getIcon(routine['icon']!),
-              isActive: true,
-              onChanged: (bool value) {},
-            );
-          },
+        body: Center(
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width > 600
+                ? 600
+                : MediaQuery.of(context).size.width,
+            child: ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: routines.length,
+              itemBuilder: (context, index) {
+                final routine = routines[index];
+                return RoutineCard(
+                  time: routine['time']!,
+                  title: routine['title']!,
+                  subtitle: routine['subtitle']!,
+                  icon: _getIcon(routine['icon']!),
+                  isActive: true,
+                  onChanged: (bool value) {},
+                );
+              },
+            ),
+          ),
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {},

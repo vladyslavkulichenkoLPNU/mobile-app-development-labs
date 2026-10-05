@@ -14,37 +14,47 @@ class RegistrationScreen extends StatelessWidget {
           if (didPop) return;
           Navigator.popUntil(context, ModalRoute.withName('/'));
         },
+
         child: Padding(
           padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const CustomTextField(label: 'Full Name'),
-              const CustomTextField(label: 'Email'),
-              const CustomTextField(label: 'Password', isPassword: true),
-              const CustomTextField(
-                label: 'Confirm Password',
-                isPassword: true,
+          child: Center(
+            child: SingleChildScrollView(
+              child: SizedBox(
+                width: MediaQuery.of(context).size.width > 600
+                    ? 600
+                    : MediaQuery.of(context).size.width,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const CustomTextField(label: 'Full Name'),
+                    const CustomTextField(label: 'Email'),
+                    const CustomTextField(label: 'Password', isPassword: true),
+                    const CustomTextField(
+                      label: 'Confirm Password',
+                      isPassword: true,
+                    ),
+                    const SizedBox(height: 8),
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.pushNamedAndRemoveUntil(
+                          context,
+                          '/dashboard',
+                          (Route<dynamic> route) => false,
+                        );
+                      },
+                      child: const Text('Enter'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/login');
+                      },
+                      child: const Text('Already have an account? Login'),
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 8),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pushNamedAndRemoveUntil(
-                    context,
-                    '/dashboard',
-                    (Route<dynamic> route) => false,
-                  );
-                },
-                child: const Text('Enter'),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, '/login');
-                },
-                child: const Text('Already have an account? Login'),
-              ),
-            ],
+            ),
           ),
         ),
       ),
