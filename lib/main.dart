@@ -1,114 +1,85 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/screens/home_screen.dart';
+import 'package:flutter_app/screens/login_screen.dart';
+import 'package:flutter_app/screens/registration_screen.dart';
+import 'package:flutter_app/screens/user_profile_screen.dart';
 
 void main() {
-  runApp(const MainApp());
+  runApp(const SmartSyncApp());
 }
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+class SmartSyncApp extends StatelessWidget {
+  const SmartSyncApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Lab 1',
-      theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.black)),
-      home: const MyHomePage(title: 'Home Page'),
+      title: 'Smart Sync Hub',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
+        useMaterial3: true,
+      ),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => const StartingScreen(),
+        '/login': (context) => const LoginScreen(),
+        '/register': (context) => const RegistrationScreen(),
+        '/dashboard': (context) => const HomeScreen(),
+        '/profile': (context) => const UserProfileScreen(),
+      },
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({required this.title, super.key});
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  final _formKey = GlobalKey<FormState>();
-  final TextEditingController _inputController = TextEditingController();
-
-  int _counter = 0;
-
-  void _processInput() {
-    final String inputValue = _inputController.text.trim();
-
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        if (inputValue == 'Avada Kedavra') {
-          _counter = 0;
-        } else {
-          final int number = int.parse(inputValue);
-          _counter += number;
-        }
-      });
-    }
-    _inputController.clear();
-  }
-
-  @override
-  void dispose() {
-    _inputController.dispose();
-    super.dispose();
-  }
+class StartingScreen extends StatelessWidget {
+  const StartingScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        title: Text(widget.title),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.only(left: 10, right: 10),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Text(
-                '$_counter',
-                style: const TextStyle(
-                  fontSize: 80,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-
-              TextFormField(
-                controller: _inputController,
-                decoration: const InputDecoration(
-                  labelText: 'Input',
-                  border: OutlineInputBorder(),
-                  errorStyle: TextStyle(color: Colors.redAccent),
-                ),
-                validator: (value) {
-                  final text = value?.trim();
-                  if (text == null || text.isEmpty) {
-                    return 'Field must not be empty!';
-                  }
-                  if (text == 'Avada Kedavra') {
-                    return null;
-                  }
-                  if (int.tryParse(text) != null) {
-                    return null;
-                  }
-                  return 'Only integers or "Avada Kedavra" are allowed.';
-                },
-              ),
-
-              ElevatedButton(
-                onPressed: _processInput,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 40,
-                    vertical: 10,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Center(
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width > 600
+                  ? 600
+                  : MediaQuery.of(context).size.width,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Icon(
+                    Icons.device_unknown,
+                    size: 80,
+                    color: Colors.teal,
                   ),
-                ),
-                child: const Text('Enter', style: TextStyle(fontSize: 25)),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Smart Sync Hub',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 40),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/login');
+                    },
+                    child: const Text('Login', style: TextStyle(fontSize: 16)),
+                  ),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/register');
+                    },
+                    child: const Text(
+                      'Register',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
