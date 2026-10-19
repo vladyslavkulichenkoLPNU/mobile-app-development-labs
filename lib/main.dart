@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/models/routine.dart';
 import 'package:flutter_app/screens/home_screen.dart';
 import 'package:flutter_app/screens/login_screen.dart';
 import 'package:flutter_app/screens/registration_screen.dart';
 import 'package:flutter_app/screens/user_profile_screen.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Hive.initFlutter();
+  Hive.registerAdapter(RoutineAdapter());
+  await Hive.openBox<Routine>('routinesBox');
   runApp(const SmartSyncApp());
 }
 
