@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/models/routine.dart';
+import 'package:flutter_app/models/user.dart';
 import 'package:flutter_app/screens/home_screen.dart';
 import 'package:flutter_app/screens/login_screen.dart';
 import 'package:flutter_app/screens/registration_screen.dart';
@@ -12,6 +13,8 @@ void main() async {
   await Hive.initFlutter();
   Hive.registerAdapter(RoutineAdapter());
   await Hive.openBox<Routine>('routinesBox');
+  Hive.registerAdapter(UserAdapter());
+  await Hive.openBox<User>('usersBox');
   runApp(const SmartSyncApp());
 }
 
