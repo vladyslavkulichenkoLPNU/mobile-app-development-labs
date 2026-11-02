@@ -1,11 +1,20 @@
-// test/widget_test.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_app/repos/users/i_user_repo.dart';
 import 'package:flutter_app/screens/login_screen.dart';
 import 'package:flutter_app/screens/registration_screen.dart';
 import 'package:flutter_app/widgets/input_text_field.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+
+class MockAuthRepository extends Mock implements IUserRepository {}
 
 void main() {
+  late MockAuthRepository mockAuthRepository;
+
+  setUp(() {
+    mockAuthRepository = MockAuthRepository();
+  });
+
   group('CustomTextField Widget Tests', () {
     testWidgets('Does not obscure text by default', (
       WidgetTester tester,
@@ -43,7 +52,9 @@ void main() {
     testWidgets('Renders all input fields and buttons', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(const MaterialApp(home: LoginScreen()));
+      await tester.pumpWidget(
+        MaterialApp(home: LoginScreen(authRepository: mockAuthRepository)),
+      );
 
       expect(find.text('Email'), findsOneWidget);
       expect(find.text('Password'), findsOneWidget);
@@ -56,7 +67,11 @@ void main() {
     testWidgets('Renders all input fields and buttons', (
       WidgetTester tester,
     ) async {
-      await tester.pumpWidget(const MaterialApp(home: RegistrationScreen()));
+      await tester.pumpWidget(
+        MaterialApp(
+          home: RegistrationScreen(authRepository: mockAuthRepository),
+        ),
+      );
 
       expect(find.text('Full Name'), findsOneWidget);
       expect(find.text('Email'), findsOneWidget);
@@ -75,8 +90,10 @@ void main() {
         MaterialApp(
           initialRoute: '/login',
           routes: {
-            '/login': (context) => const LoginScreen(),
-            '/register': (context) => const RegistrationScreen(),
+            '/login': (context) =>
+                LoginScreen(authRepository: mockAuthRepository),
+            '/register': (context) =>
+                RegistrationScreen(authRepository: mockAuthRepository),
           },
         ),
       );

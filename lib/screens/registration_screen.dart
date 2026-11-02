@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/models/user.dart';
+import 'package:flutter_app/repos/users/i_user_repo.dart';
 import 'package:flutter_app/repos/users/user_repo.dart';
 import 'package:flutter_app/widgets/auth_layout.dart';
 import 'package:flutter_app/widgets/input_text_field.dart';
 import 'package:hive/hive.dart';
 
 class RegistrationScreen extends StatefulWidget {
-  const RegistrationScreen({super.key});
+  final IUserRepository? authRepository;
+  const RegistrationScreen({super.key, this.authRepository});
 
   @override
   State<RegistrationScreen> createState() => _RegistrationScreenState();
@@ -19,13 +21,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
-  late final HiveUserRepository _userRepository;
+  late final IUserRepository _userRepository;
   String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
-    _userRepository = HiveUserRepository(Hive.box<User>('usersBox'));
+    _userRepository =
+        widget.authRepository ?? HiveUserRepository(Hive.box<User>('usersBox'));
   }
 
   @override
