@@ -28,7 +28,8 @@ void main() {
 
     test('returns true and persists user when email is not taken', () async {
       when(() => mockUserBox.containsKey(email)).thenReturn(false);
-      when(() => mockUserBox.put(email, any())).thenAnswer((_) async {});
+      when(() => mockUserBox.put(any<dynamic>(), any<User>()))
+          .thenAnswer((_) async {});
 
       final result = await authRepository.register(name, email, password);
 
@@ -74,11 +75,14 @@ void main() {
 
     test('returns true when user exists and password matches', () async {
       when(() => mockUserBox.get(email)).thenReturn(savedUser);
+      when(() => mockUserBox.put(any<dynamic>(), any<User>()))
+          .thenAnswer((_) async {});
 
       final result = await authRepository.login(email, validPassword);
 
       expect(result, isTrue);
       verify(() => mockUserBox.get(email)).called(1);
+      verify(() => mockUserBox.put(any<dynamic>(), any<User>())).called(1);
     });
 
     test('returns false when user does not exist in box', () async {
