@@ -7,6 +7,7 @@ import 'package:flutter_app/ui/utils/routine_icons.dart';
 import 'package:flutter_app/ui/widgets/centered_content.dart';
 import 'package:flutter_app/ui/widgets/confirm_dialog.dart';
 import 'package:flutter_app/ui/widgets/routine_card.dart';
+import 'package:flutter_app/ui/widgets/routine_form_dialog.dart';
 
 class HomeScreen extends StatefulWidget {
   final IRoutineRepository routineRepository;
@@ -20,6 +21,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   List<Routine> routines = [];
   bool isLoading = true;
+  bool _isMutating = false;
 
   @override
   void initState() {
@@ -34,9 +36,11 @@ class _HomeScreenState extends State<HomeScreen> {
       for (final routine in defaultRoutines) {
         await widget.routineRepository.addRoutine(routine);
       }
-      routines = await widget.routineRepository.getAllRoutines();
+      routines = List<Routine>.of(
+        await widget.routineRepository.getAllRoutines(),
+      );
     } else {
-      routines = fetchedRoutines;
+      routines = List<Routine>.of(fetchedRoutines);
     }
 
     if (!mounted) return;
@@ -56,6 +60,121 @@ class _HomeScreenState extends State<HomeScreen> {
         routines[index] = updated;
       }
     });
+  }
+
+  Future<void> _addRoutine() async {
+    if (_isMutating) return;
+
+    final newRoutine = await showRoutineFormDialog(context: context);
+    if (newRoutine == null || !mounted) return;
+
+    setState(() => _isMutating = true);
+    try {
+      await widget.routineRepository.addRoutine(newRoutine);
+      if (!mounted) return;
+      setState(() {
+        routines.add(newRoutine);
+      });
+    } finally {
+      if (mounted) {
+        setState(() => _isMutating = false);
+      }
+    }
+  }
+
+  Future<void> _editRoutine(Routine routine) async {
+    if (_isMutating) return;
+
+    final updated = await showRoutineFormDialog(
+      context: context,
+      initialRoutine: routine,
+    );
+    if (updated == null || !mounted) return;
+
+    setState(() => _isMutating = true);
+    try {
+      await widget.routineRepository.updateRoutine(updated);
+      if (!mounted) return;
+      setState(() {
+        final index = routines.indexWhere((item) => item.id == updated.id);
+        if (index != -1) {
+          routines[index] = updated;
+        }
+      });
+    } finally {
+      if (mounted) {
+        setState(() => _isMutating = false);
+      }
+    }
+  }
+
+  Future<void> _deleteRoutine(Routine routine) async {
+    if (_isMutating) return;
+
+    final confirmed = await showConfirmDialog(
+      context: context,
+      title: 'Delete Routine',
+      content: 'Are you sure you want to delete "${routine.title}"?',
+      confirmLabel: 'Delete',
+    );
+    if (!confirmed || !mounted) return;
+
+    setState(() => _isMutating = true);
+    try {
+      await widget.routineRepository.deleteRoutine(routine.id);
+      if (!mounted) return;
+      setState(() {
+        routines.removeWhere((item) => item.id == routine.id);
+      });
+    } finally {
+      if (mounted) {
+        setState(() => _isMutating = false);
+      }
+    }
+  }
+
+  Widget _buildBody() {
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return Column(
+      children: [
+        if (_isMutating) const LinearProgressIndicator(),
+        Expanded(
+          child: routines.isEmpty
+              ? const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(24),
+                    child: Text(
+                      'No routines yet. Tap + to add one.',
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                )
+              : CenteredContent(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: routines.length,
+                    itemBuilder: (context, index) {
+                      final routine = routines[index];
+                      return RoutineCard(
+                        time: routine.time,
+                        title: routine.title,
+                        subtitle: routine.subtitle,
+                        icon: RoutineIcons.fromName(routine.icon),
+                        isActive: routine.isActive,
+                        onChanged: (bool value) =>
+                            _toggleRoutine(routine, value),
+                        onEdit: () => _editRoutine(routine),
+                        onDelete: () => _deleteRoutine(routine),
+                      );
+                    },
+                  ),
+                ),
+        ),
+      ],
+    );
   }
 
   @override
@@ -86,37 +205,9 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
-        body: isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : CenteredContent(
-                child: ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: routines.length,
-                  itemBuilder: (context, index) {
-                    final routine = routines[index];
-                    return RoutineCard(
-                      time: routine.time,
-                      title: routine.title,
-                      subtitle: routine.subtitle,
-                      icon: RoutineIcons.fromName(routine.icon),
-                      isActive: routine.isActive,
-                      onChanged: (bool value) => _toggleRoutine(routine, value),
-                    );
-                  },
-                ),
-              ),
+        body: _buildBody(),
         floatingActionButton: FloatingActionButton(
-          onPressed: () async {
-            final newRoutine = Routine(
-              id: DateTime.now().microsecondsSinceEpoch.toString(),
-              time: '22:00 PM',
-              title: 'Sleep Mode',
-              subtitle: 'All Lights OFF, Doors LOCKED',
-              icon: 'nightlight_round',
-            );
-            await widget.routineRepository.addRoutine(newRoutine);
-            await _loadRoutines();
-          },
+          onPressed: _isMutating ? null : _addRoutine,
           child: const Icon(Icons.add),
         ),
       ),

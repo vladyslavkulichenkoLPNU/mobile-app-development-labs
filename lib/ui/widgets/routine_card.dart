@@ -7,6 +7,8 @@ class RoutineCard extends StatelessWidget {
   final IconData icon;
   final bool isActive;
   final ValueChanged<bool> onChanged;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
 
   const RoutineCard({
     required this.time,
@@ -15,6 +17,8 @@ class RoutineCard extends StatelessWidget {
     required this.icon,
     required this.isActive,
     required this.onChanged,
+    required this.onEdit,
+    required this.onDelete,
     super.key,
   });
 
@@ -22,14 +26,44 @@ class RoutineCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
-      child: ListTile(
-        leading: Icon(icon, size: 32, color: Colors.teal),
-        title: Text(
-          '$time - $title',
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Text(subtitle),
-        trailing: Switch(value: isActive, onChanged: onChanged),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(
+            leading: Icon(icon, size: 32, color: Colors.teal),
+            title: Text(
+              '$time - $title',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Text(subtitle),
+            trailing: Switch(value: isActive, onChanged: onChanged),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(right: 8, bottom: 4),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton.icon(
+                  onPressed: onEdit,
+                  icon: const Icon(Icons.edit_outlined, size: 18),
+                  label: const Text('Edit'),
+                ),
+                TextButton.icon(
+                  onPressed: onDelete,
+                  icon: const Icon(
+                    Icons.delete_outline,
+                    size: 18,
+                    color: Colors.redAccent,
+                  ),
+                  label: const Text(
+                    'Delete',
+                    style: TextStyle(color: Colors.redAccent),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
