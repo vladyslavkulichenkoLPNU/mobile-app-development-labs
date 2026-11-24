@@ -31,6 +31,49 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     });
   }
 
+  Future<void> _confirmLogout() async {
+    if (_isLoggingOut) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('Log Out'),
+          content: const Text('Are you sure you want to log out?'),
+          actions: [
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.pop(dialogContext, false);
+                    },
+                    child: const Text('Cancel'),
+                  ),
+                ),
+                Expanded(
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.pop(dialogContext, true);
+                    },
+                    child: const Text(
+                      'Log Out',
+                      style: TextStyle(color: Colors.redAccent),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true && mounted) {
+      await _handleLogout();
+    }
+  }
+
   Future<void> _handleLogout() async {
     if (_isLoggingOut) return;
 
@@ -109,7 +152,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             const Divider(),
             const SizedBox(height: 24),
             OutlinedButton.icon(
-              onPressed: _isLoggingOut ? null : _handleLogout,
+              onPressed: _isLoggingOut ? null : _confirmLogout,
               icon: _isLoggingOut
                   ? const SizedBox(
                       height: 18,

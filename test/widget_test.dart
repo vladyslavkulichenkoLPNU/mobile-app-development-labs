@@ -407,8 +407,44 @@ void main() {
       await tester.tap(find.text('Log Out'));
       await tester.pumpAndSettle();
 
+      expect(find.text('Are you sure you want to log out?'), findsOneWidget);
+
+      await tester.tap(find.widgetWithText(TextButton, 'Log Out'));
+      await tester.pumpAndSettle();
+
       verify(() => mockAuthRepository.logout()).called(1);
       expect(find.text('Start'), findsOneWidget);
+    });
+
+    testWidgets('Does not log out when confirmation dialog is cancelled', (
+      WidgetTester tester,
+    ) async {
+      when(() => mockAuthRepository.getCurrentUser()).thenAnswer(
+        (_) async => const User(
+          name: 'Jane Doe',
+          email: 'jane@example.com',
+          password: 'password123',
+        ),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: UserProfileScreen(authRepository: mockAuthRepository),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(find.text('Log Out'));
+      await tester.tap(find.text('Log Out'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Are you sure you want to log out?'), findsOneWidget);
+
+      await tester.tap(find.widgetWithText(TextButton, 'Cancel'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Are you sure you want to log out?'), findsNothing);
+      verifyNever(() => mockAuthRepository.logout());
     });
   });
 
