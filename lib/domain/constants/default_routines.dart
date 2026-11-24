@@ -17,7 +17,7 @@ const List<Routine> defaultRoutines = [
   ),
   Routine(
     id: 'default_evening',
-    time: '18:30 PM',
+    time: '6:30 PM',
     title: 'Evening Mode',
     subtitle: 'Living Room Lights Dimmed (30%), TV ON',
     icon: 'nightlight_round',
