@@ -1,10 +1,5 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
-
-part of 'user.dart';
-
-// **************************************************************************
-// TypeAdapterGenerator
-// **************************************************************************
+import 'package:flutter_app/domain/models/user.dart';
+import 'package:hive/hive.dart';
 
 class UserAdapter extends TypeAdapter<User> {
   @override
@@ -13,8 +8,8 @@ class UserAdapter extends TypeAdapter<User> {
   @override
   User read(BinaryReader reader) {
     final numOfFields = reader.readByte();
-    final fields = <int, dynamic>{
-      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    final fields = <int, Object?>{
+      for (var i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return User(
       name: fields[0] as String,

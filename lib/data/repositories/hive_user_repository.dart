@@ -1,12 +1,12 @@
-import 'package:flutter_app/models/user.dart';
-import 'package:flutter_app/repos/users/i_user_repo.dart';
+import 'package:flutter_app/domain/models/user.dart';
+import 'package:flutter_app/domain/repositories/i_user_repository.dart';
 import 'package:hive/hive.dart';
 
 class HiveUserRepository implements IUserRepository {
   static const String _sessionKey = '__current_session__';
   final Box<User> _userBox;
 
-  HiveUserRepository(this._userBox);
+  const HiveUserRepository(this._userBox);
 
   @override
   Future<bool> login(String email, String password) async {

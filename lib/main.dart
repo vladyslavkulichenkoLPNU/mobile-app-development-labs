@@ -1,25 +1,49 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/models/routine.dart';
-import 'package:flutter_app/models/user.dart';
-import 'package:flutter_app/screens/home_screen.dart';
-import 'package:flutter_app/screens/login_screen.dart';
-import 'package:flutter_app/screens/registration_screen.dart';
-import 'package:flutter_app/screens/starting_screen.dart';
-import 'package:flutter_app/screens/user_profile_screen.dart';
+import 'package:flutter_app/data/adapters/routine_adapter.dart';
+import 'package:flutter_app/data/adapters/user_adapter.dart';
+import 'package:flutter_app/data/repositories/hive_routine_repository.dart';
+import 'package:flutter_app/data/repositories/hive_user_repository.dart';
+import 'package:flutter_app/domain/models/routine.dart';
+import 'package:flutter_app/domain/models/user.dart';
+import 'package:flutter_app/domain/repositories/i_routine_repository.dart';
+import 'package:flutter_app/domain/repositories/i_user_repository.dart';
+import 'package:flutter_app/ui/screens/home_screen.dart';
+import 'package:flutter_app/ui/screens/login_screen.dart';
+import 'package:flutter_app/ui/screens/registration_screen.dart';
+import 'package:flutter_app/ui/screens/starting_screen.dart';
+import 'package:flutter_app/ui/screens/user_profile_screen.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
   Hive.registerAdapter(RoutineAdapter());
-  await Hive.openBox<Routine>('routinesBox');
+  final routinesBox = await Hive.openBox<Routine>('routinesBox');
   Hive.registerAdapter(UserAdapter());
-  await Hive.openBox<User>('usersBox');
-  runApp(const SmartSyncApp());
+  final usersBox = await Hive.openBox<User>('usersBox');
+
+  final IUserRepository userRepository = HiveUserRepository(usersBox);
+  final IRoutineRepository routineRepository = HiveRoutineRepository(
+    routinesBox,
+  );
+
+  runApp(
+    SmartSyncApp(
+      userRepository: userRepository,
+      routineRepository: routineRepository,
+    ),
+  );
 }
 
 class SmartSyncApp extends StatelessWidget {
-  const SmartSyncApp({super.key});
+  final IUserRepository userRepository;
+  final IRoutineRepository routineRepository;
+
+  const SmartSyncApp({
+    required this.userRepository,
+    required this.routineRepository,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -32,10 +56,13 @@ class SmartSyncApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => const StartingScreen(),
-        '/login': (context) => const LoginScreen(),
-        '/register': (context) => const RegistrationScreen(),
-        '/dashboard': (context) => const HomeScreen(),
-        '/profile': (context) => const UserProfileScreen(),
+        '/login': (context) => LoginScreen(authRepository: userRepository),
+        '/register': (context) =>
+            RegistrationScreen(authRepository: userRepository),
+        '/dashboard': (context) =>
+            HomeScreen(routineRepository: routineRepository),
+        '/profile': (context) =>
+            UserProfileScreen(authRepository: userRepository),
       },
     );
   }

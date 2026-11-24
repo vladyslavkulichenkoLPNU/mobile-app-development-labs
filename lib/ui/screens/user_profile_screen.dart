@@ -1,33 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/models/user.dart';
-import 'package:flutter_app/repos/users/i_user_repo.dart';
-import 'package:flutter_app/repos/users/user_repo.dart';
-import 'package:hive/hive.dart';
+import 'package:flutter_app/domain/models/user.dart';
+import 'package:flutter_app/domain/repositories/i_user_repository.dart';
 
 class UserProfileScreen extends StatefulWidget {
-  final IUserRepository? authRepository;
+  final IUserRepository authRepository;
 
-  const UserProfileScreen({super.key, this.authRepository});
+  const UserProfileScreen({required this.authRepository, super.key});
 
   @override
   State<UserProfileScreen> createState() => _UserProfileScreenState();
 }
 
 class _UserProfileScreenState extends State<UserProfileScreen> {
-  late final IUserRepository _authRepository;
   User? _currentUser;
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _authRepository =
-        widget.authRepository ?? HiveUserRepository(Hive.box<User>('usersBox'));
     _loadUserData();
   }
 
   Future<void> _loadUserData() async {
-    final user = await _authRepository.getCurrentUser();
+    final user = await widget.authRepository.getCurrentUser();
     if (!mounted) return;
     setState(() {
       _currentUser = user;
@@ -36,7 +31,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 
   Future<void> _handleLogout() async {
-    await _authRepository.logout();
+    await widget.authRepository.logout();
     if (!mounted) return;
     Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
   }
@@ -72,9 +67,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       title: const Text('Email Address'),
                       subtitle: Text(_currentUser!.email),
                     ),
-
                     const Divider(),
-
                     const SizedBox(height: 24),
                     OutlinedButton.icon(
                       onPressed: _handleLogout,

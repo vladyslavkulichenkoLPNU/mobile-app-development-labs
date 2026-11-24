@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/repos/users/i_user_repo.dart';
-import 'package:flutter_app/screens/login_screen.dart';
-import 'package:flutter_app/screens/registration_screen.dart';
-import 'package:flutter_app/widgets/input_text_field.dart';
+import 'package:flutter_app/domain/repositories/i_user_repository.dart';
+import 'package:flutter_app/ui/screens/login_screen.dart';
+import 'package:flutter_app/ui/screens/registration_screen.dart';
+import 'package:flutter_app/ui/widgets/input_text_field.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 

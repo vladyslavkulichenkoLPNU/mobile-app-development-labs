@@ -1,61 +1,64 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_app/models/routine.dart';
-import 'package:flutter_app/repos/routines/i_routine_repo.dart';
-import 'package:flutter_app/repos/routines/routine_repo.dart';
-import 'package:flutter_app/widgets/routine_card.dart';
-import 'package:hive/hive.dart';
+import 'package:flutter_app/domain/models/routine.dart';
+import 'package:flutter_app/domain/repositories/i_routine_repository.dart';
+import 'package:flutter_app/ui/widgets/routine_card.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final IRoutineRepository routineRepository;
+
+  const HomeScreen({required this.routineRepository, super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late IRoutineRepository _repository;
   List<Routine> routines = [];
   bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _repository = HiveRoutineRepository(Hive.box<Routine>('routinesBox'));
     _loadRoutines();
   }
 
   Future<void> _loadRoutines() async {
-    final fetchedRoutines = await _repository.getAllRoutines();
+    final fetchedRoutines = await widget.routineRepository.getAllRoutines();
 
     if (fetchedRoutines.isEmpty) {
-      final defaultRoutines = [
+      const defaultRoutines = [
         Routine(
+          id: 'default_morning',
           time: '07:00 AM',
           title: 'Morning Wakeup',
           subtitle: 'Thermostat 22 C, Bedroom Blinds Open, Coffee Maker ON',
           icon: 'wb_sunny',
         ),
         Routine(
+          id: 'default_work',
           time: '09:00 AM',
           title: 'Leave for Work',
           subtitle: 'All Lights OFF, Security System ARMED, Doors LOCKED',
           icon: 'security',
         ),
         Routine(
+          id: 'default_evening',
           time: '18:30 PM',
           title: 'Evening Mode',
           subtitle: 'Living Room Lights Dimmed (30%), TV ON',
           icon: 'nightlight_round',
         ),
       ];
-      for (var routine in defaultRoutines) {
-        await _repository.addRoutine(routine);
+      for (final routine in defaultRoutines) {
+        await widget.routineRepository.addRoutine(routine);
       }
-      routines = await _repository.getAllRoutines();
+      routines = await widget.routineRepository.getAllRoutines();
     } else {
       routines = fetchedRoutines;
     }
+
+    if (!mounted) return;
 
     setState(() {
       isLoading = false;
@@ -63,9 +66,15 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _toggleRoutine(Routine routine, bool newValue) async {
-    routine.isActive = newValue;
-    await _repository.updateRoutine(routine);
-    setState(() {});
+    final updated = routine.copyWith(isActive: newValue);
+    await widget.routineRepository.updateRoutine(updated);
+    if (!mounted) return;
+    setState(() {
+      final index = routines.indexWhere((item) => item.id == routine.id);
+      if (index != -1) {
+        routines[index] = updated;
+      }
+    });
   }
 
   IconData _getIcon(String name) {
@@ -85,10 +94,9 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
-        showDialog<Null>(
+        showDialog<void>(
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
@@ -121,7 +129,6 @@ class _HomeScreenState extends State<HomeScreen> {
           },
         );
       },
-
       child: Scaffold(
         appBar: AppBar(
           title: const Text('My IoT Routines'),
@@ -162,13 +169,14 @@ class _HomeScreenState extends State<HomeScreen> {
         floatingActionButton: FloatingActionButton(
           onPressed: () async {
             final newRoutine = Routine(
+              id: DateTime.now().microsecondsSinceEpoch.toString(),
               time: '22:00 PM',
               title: 'Sleep Mode',
               subtitle: 'All Lights OFF, Doors LOCKED',
               icon: 'nightlight_round',
             );
-            await _repository.addRoutine(newRoutine);
-            _loadRoutines();
+            await widget.routineRepository.addRoutine(newRoutine);
+            await _loadRoutines();
           },
           child: const Icon(Icons.add),
         ),

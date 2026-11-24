@@ -1,10 +1,5 @@
-// GENERATED CODE - DO NOT MODIFY BY HAND
-
-part of 'routine.dart';
-
-// **************************************************************************
-// TypeAdapterGenerator
-// **************************************************************************
+import 'package:flutter_app/domain/models/routine.dart';
+import 'package:hive/hive.dart';
 
 class RoutineAdapter extends TypeAdapter<Routine> {
   @override
@@ -13,10 +8,11 @@ class RoutineAdapter extends TypeAdapter<Routine> {
   @override
   Routine read(BinaryReader reader) {
     final numOfFields = reader.readByte();
-    final fields = <int, dynamic>{
-      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    final fields = <int, Object?>{
+      for (var i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return Routine(
+      id: (fields[5] as String?) ?? '',
       time: fields[0] as String,
       title: fields[1] as String,
       subtitle: fields[2] as String,
@@ -28,7 +24,7 @@ class RoutineAdapter extends TypeAdapter<Routine> {
   @override
   void write(BinaryWriter writer, Routine obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.time)
       ..writeByte(1)
@@ -38,7 +34,9 @@ class RoutineAdapter extends TypeAdapter<Routine> {
       ..writeByte(3)
       ..write(obj.icon)
       ..writeByte(4)
-      ..write(obj.isActive);
+      ..write(obj.isActive)
+      ..writeByte(5)
+      ..write(obj.id);
   }
 
   @override

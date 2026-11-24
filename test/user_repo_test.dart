@@ -1,5 +1,5 @@
-import 'package:flutter_app/models/user.dart';
-import 'package:flutter_app/repos/users/user_repo.dart';
+import 'package:flutter_app/data/repositories/hive_user_repository.dart';
+import 'package:flutter_app/domain/models/user.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 import 'package:mocktail/mocktail.dart';
@@ -67,7 +67,7 @@ void main() {
     const validPassword = 'correctPassword';
     const wrongPassword = 'invalidPassword';
 
-    final savedUser = User(
+    const savedUser = User(
       name: 'Test User',
       email: email,
       password: validPassword,

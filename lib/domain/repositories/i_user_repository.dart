@@ -1,4 +1,4 @@
-import 'package:flutter_app/models/user.dart';
+import 'package:flutter_app/domain/models/user.dart';
 
 abstract class IUserRepository {
   Future<bool> login(String email, String password);

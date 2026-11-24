@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_app/models/user.dart';
-import 'package:flutter_app/repos/users/i_user_repo.dart';
-import 'package:flutter_app/repos/users/user_repo.dart';
-import 'package:flutter_app/widgets/auth_layout.dart';
-import 'package:flutter_app/widgets/input_text_field.dart';
-import 'package:hive/hive.dart';
+import 'package:flutter_app/domain/repositories/i_user_repository.dart';
+import 'package:flutter_app/ui/widgets/auth_layout.dart';
+import 'package:flutter_app/ui/widgets/input_text_field.dart';
 
 class RegistrationScreen extends StatefulWidget {
-  final IUserRepository? authRepository;
-  const RegistrationScreen({super.key, this.authRepository});
+  final IUserRepository authRepository;
+
+  const RegistrationScreen({required this.authRepository, super.key});
 
   @override
   State<RegistrationScreen> createState() => _RegistrationScreenState();
@@ -21,15 +19,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
-  late final IUserRepository _userRepository;
   String? _errorMessage;
-
-  @override
-  void initState() {
-    super.initState();
-    _userRepository =
-        widget.authRepository ?? HiveUserRepository(Hive.box<User>('usersBox'));
-  }
 
   @override
   void dispose() {
@@ -45,7 +35,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
     if (!_formKey.currentState!.validate()) return;
 
-    final success = await _userRepository.register(
+    final success = await widget.authRepository.register(
       _nameController.text.trim(),
       _emailController.text.trim(),
       _passwordController.text,
