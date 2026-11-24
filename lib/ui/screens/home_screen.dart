@@ -18,8 +18,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<Routine> routines = [];
-  bool isLoading = true;
+  List<Routine> _routines = [];
+  bool _isLoading = true;
   bool _isMutating = false;
 
   @override
@@ -32,20 +32,37 @@ class _HomeScreenState extends State<HomeScreen> {
     final fetchedRoutines = await widget.routineRepository.getAllRoutines();
     if (!mounted) return;
     setState(() {
-      routines = List<Routine>.of(fetchedRoutines);
-      isLoading = false;
+      _routines = List<Routine>.of(fetchedRoutines);
+      _isLoading = false;
     });
+  }
+
+  Future<void> _runMutation(Future<void> Function() action) async {
+    if (_isMutating) return;
+
+    setState(() => _isMutating = true);
+    try {
+      await action();
+    } finally {
+      if (mounted) {
+        setState(() => _isMutating = false);
+      }
+    }
+  }
+
+  void _replaceRoutine(Routine updated) {
+    final index = _routines.indexWhere((item) => item.id == updated.id);
+    if (index != -1) {
+      _routines[index] = updated;
+    }
   }
 
   Future<void> _toggleRoutine(Routine routine, bool newValue) async {
     final updated = routine.copyWith(isActive: newValue);
-    await widget.routineRepository.updateRoutine(updated);
-    if (!mounted) return;
-    setState(() {
-      final index = routines.indexWhere((item) => item.id == routine.id);
-      if (index != -1) {
-        routines[index] = updated;
-      }
+    await _runMutation(() async {
+      await widget.routineRepository.updateRoutine(updated);
+      if (!mounted) return;
+      setState(() => _replaceRoutine(updated));
     });
   }
 
@@ -55,18 +72,11 @@ class _HomeScreenState extends State<HomeScreen> {
     final newRoutine = await showRoutineFormDialog(context: context);
     if (newRoutine == null || !mounted) return;
 
-    setState(() => _isMutating = true);
-    try {
+    await _runMutation(() async {
       await widget.routineRepository.addRoutine(newRoutine);
       if (!mounted) return;
-      setState(() {
-        routines.add(newRoutine);
-      });
-    } finally {
-      if (mounted) {
-        setState(() => _isMutating = false);
-      }
-    }
+      setState(() => _routines.add(newRoutine));
+    });
   }
 
   Future<void> _editRoutine(Routine routine) async {
@@ -78,21 +88,11 @@ class _HomeScreenState extends State<HomeScreen> {
     );
     if (updated == null || !mounted) return;
 
-    setState(() => _isMutating = true);
-    try {
+    await _runMutation(() async {
       await widget.routineRepository.updateRoutine(updated);
       if (!mounted) return;
-      setState(() {
-        final index = routines.indexWhere((item) => item.id == updated.id);
-        if (index != -1) {
-          routines[index] = updated;
-        }
-      });
-    } finally {
-      if (mounted) {
-        setState(() => _isMutating = false);
-      }
-    }
+      setState(() => _replaceRoutine(updated));
+    });
   }
 
   Future<void> _deleteRoutine(Routine routine) async {
@@ -106,22 +106,17 @@ class _HomeScreenState extends State<HomeScreen> {
     );
     if (!confirmed || !mounted) return;
 
-    setState(() => _isMutating = true);
-    try {
+    await _runMutation(() async {
       await widget.routineRepository.deleteRoutine(routine.id);
       if (!mounted) return;
       setState(() {
-        routines.removeWhere((item) => item.id == routine.id);
+        _routines.removeWhere((item) => item.id == routine.id);
       });
-    } finally {
-      if (mounted) {
-        setState(() => _isMutating = false);
-      }
-    }
+    });
   }
 
   Widget _buildBody() {
-    if (isLoading) {
+    if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
 
@@ -129,7 +124,7 @@ class _HomeScreenState extends State<HomeScreen> {
       children: [
         if (_isMutating) const LinearProgressIndicator(),
         Expanded(
-          child: routines.isEmpty
+          child: _routines.isEmpty
               ? const Center(
                   child: Padding(
                     padding: EdgeInsets.all(24),
@@ -142,9 +137,9 @@ class _HomeScreenState extends State<HomeScreen> {
               : CenteredContent(
                   child: ListView.builder(
                     padding: const EdgeInsets.all(16),
-                    itemCount: routines.length,
+                    itemCount: _routines.length,
                     itemBuilder: (context, index) {
-                      final routine = routines[index];
+                      final routine = _routines[index];
                       return RoutineCard(
                         time: routine.time,
                         title: routine.title,
