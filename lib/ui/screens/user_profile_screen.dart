@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/domain/models/user.dart';
 import 'package:flutter_app/domain/repositories/i_user_repository.dart';
+import 'package:flutter_app/ui/widgets/centered_content.dart';
 import 'package:flutter_app/ui/widgets/confirm_dialog.dart';
 
 class UserProfileScreen extends StatefulWidget {
@@ -97,56 +98,51 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       );
     }
 
-    return Center(
-      child: SizedBox(
-        width: MediaQuery.of(context).size.width > 600
-            ? 600
-            : MediaQuery.of(context).size.width,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            const Center(
-              child: CircleAvatar(
-                radius: 50,
-                child: Icon(Icons.person, size: 50),
-              ),
+    return CenteredContent(
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          const Center(
+            child: CircleAvatar(
+              radius: 50,
+              child: Icon(Icons.person, size: 50),
             ),
-            const SizedBox(height: 32),
-            ListTile(
-              leading: const Icon(Icons.person_outline),
-              title: const Text('Full Name'),
-              subtitle: Text(currentUser.name),
+          ),
+          const SizedBox(height: 32),
+          ListTile(
+            leading: const Icon(Icons.person_outline),
+            title: const Text('Full Name'),
+            subtitle: Text(currentUser.name),
+          ),
+          ListTile(
+            leading: const Icon(Icons.email_outlined),
+            title: const Text('Email Address'),
+            subtitle: Text(currentUser.email),
+          ),
+          const Divider(),
+          const SizedBox(height: 24),
+          OutlinedButton.icon(
+            onPressed: _isLoggingOut ? null : _confirmLogout,
+            icon: _isLoggingOut
+                ? const SizedBox(
+                    height: 18,
+                    width: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.redAccent,
+                    ),
+                  )
+                : const Icon(Icons.logout, color: Colors.redAccent),
+            label: const Text(
+              'Log Out',
+              style: TextStyle(color: Colors.redAccent),
             ),
-            ListTile(
-              leading: const Icon(Icons.email_outlined),
-              title: const Text('Email Address'),
-              subtitle: Text(currentUser.email),
+            style: OutlinedButton.styleFrom(
+              side: const BorderSide(color: Colors.redAccent),
+              padding: const EdgeInsets.symmetric(vertical: 12),
             ),
-            const Divider(),
-            const SizedBox(height: 24),
-            OutlinedButton.icon(
-              onPressed: _isLoggingOut ? null : _confirmLogout,
-              icon: _isLoggingOut
-                  ? const SizedBox(
-                      height: 18,
-                      width: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.redAccent,
-                      ),
-                    )
-                  : const Icon(Icons.logout, color: Colors.redAccent),
-              label: const Text(
-                'Log Out',
-                style: TextStyle(color: Colors.redAccent),
-              ),
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Colors.redAccent),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

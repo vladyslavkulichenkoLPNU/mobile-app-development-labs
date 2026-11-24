@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/ui/widgets/centered_content.dart';
 
 class AuthLayout extends StatelessWidget {
   final Widget child;
@@ -7,8 +8,6 @@ class AuthLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
@@ -19,14 +18,7 @@ class AuthLayout extends StatelessWidget {
         body: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(24),
-            child: Center(
-              child: SingleChildScrollView(
-                child: SizedBox(
-                  width: screenWidth > 600 ? 600 : screenWidth,
-                  child: child,
-                ),
-              ),
-            ),
+            child: CenteredContent(child: SingleChildScrollView(child: child)),
           ),
         ),
       ),

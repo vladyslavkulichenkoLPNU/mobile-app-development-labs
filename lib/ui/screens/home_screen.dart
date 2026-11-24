@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_app/domain/constants/default_routines.dart';
 import 'package:flutter_app/domain/models/routine.dart';
 import 'package:flutter_app/domain/repositories/i_routine_repository.dart';
+import 'package:flutter_app/ui/utils/routine_icons.dart';
+import 'package:flutter_app/ui/widgets/centered_content.dart';
 import 'package:flutter_app/ui/widgets/confirm_dialog.dart';
 import 'package:flutter_app/ui/widgets/routine_card.dart';
 
@@ -28,29 +31,6 @@ class _HomeScreenState extends State<HomeScreen> {
     final fetchedRoutines = await widget.routineRepository.getAllRoutines();
 
     if (fetchedRoutines.isEmpty) {
-      const defaultRoutines = [
-        Routine(
-          id: 'default_morning',
-          time: '07:00 AM',
-          title: 'Morning Wakeup',
-          subtitle: 'Thermostat 22 C, Bedroom Blinds Open, Coffee Maker ON',
-          icon: 'wb_sunny',
-        ),
-        Routine(
-          id: 'default_work',
-          time: '09:00 AM',
-          title: 'Leave for Work',
-          subtitle: 'All Lights OFF, Security System ARMED, Doors LOCKED',
-          icon: 'security',
-        ),
-        Routine(
-          id: 'default_evening',
-          time: '18:30 PM',
-          title: 'Evening Mode',
-          subtitle: 'Living Room Lights Dimmed (30%), TV ON',
-          icon: 'nightlight_round',
-        ),
-      ];
       for (final routine in defaultRoutines) {
         await widget.routineRepository.addRoutine(routine);
       }
@@ -76,19 +56,6 @@ class _HomeScreenState extends State<HomeScreen> {
         routines[index] = updated;
       }
     });
-  }
-
-  IconData _getIcon(String name) {
-    switch (name) {
-      case 'wb_sunny':
-        return Icons.wb_sunny;
-      case 'security':
-        return Icons.security;
-      case 'nightlight_round':
-        return Icons.nightlight_round;
-      default:
-        return Icons.device_hub;
-    }
   }
 
   @override
@@ -121,27 +88,21 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         body: isLoading
             ? const Center(child: CircularProgressIndicator())
-            : Center(
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width > 600
-                      ? 600
-                      : MediaQuery.of(context).size.width,
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: routines.length,
-                    itemBuilder: (context, index) {
-                      final routine = routines[index];
-                      return RoutineCard(
-                        time: routine.time,
-                        title: routine.title,
-                        subtitle: routine.subtitle,
-                        icon: _getIcon(routine.icon),
-                        isActive: routine.isActive,
-                        onChanged: (bool value) =>
-                            _toggleRoutine(routine, value),
-                      );
-                    },
-                  ),
+            : CenteredContent(
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: routines.length,
+                  itemBuilder: (context, index) {
+                    final routine = routines[index];
+                    return RoutineCard(
+                      time: routine.time,
+                      title: routine.title,
+                      subtitle: routine.subtitle,
+                      icon: RoutineIcons.fromName(routine.icon),
+                      isActive: routine.isActive,
+                      onChanged: (bool value) => _toggleRoutine(routine, value),
+                    );
+                  },
                 ),
               ),
         floatingActionButton: FloatingActionButton(
