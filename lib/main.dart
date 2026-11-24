@@ -26,11 +26,13 @@ Future<void> main() async {
   final IRoutineRepository routineRepository = HiveRoutineRepository(
     routinesBox,
   );
+  final currentUser = await userRepository.getCurrentUser();
 
   runApp(
     SmartSyncApp(
       userRepository: userRepository,
       routineRepository: routineRepository,
+      initialRoute: currentUser != null ? '/dashboard' : '/',
     ),
   );
 }
@@ -38,10 +40,12 @@ Future<void> main() async {
 class SmartSyncApp extends StatelessWidget {
   final IUserRepository userRepository;
   final IRoutineRepository routineRepository;
+  final String initialRoute;
 
   const SmartSyncApp({
     required this.userRepository,
     required this.routineRepository,
+    required this.initialRoute,
     super.key,
   });
 
@@ -53,7 +57,7 @@ class SmartSyncApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
         useMaterial3: true,
       ),
-      initialRoute: '/',
+      initialRoute: initialRoute,
       routes: {
         '/': (context) => const StartingScreen(),
         '/login': (context) => LoginScreen(authRepository: userRepository),
