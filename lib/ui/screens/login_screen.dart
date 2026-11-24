@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_app/domain/repositories/i_user_repository.dart';
 import 'package:flutter_app/domain/validators/auth_validator.dart';
 import 'package:flutter_app/ui/widgets/auth_layout.dart';
 import 'package:flutter_app/ui/widgets/form_error_text.dart';
 import 'package:flutter_app/ui/widgets/input_text_field.dart';
 import 'package:flutter_app/ui/widgets/loading_elevated_button.dart';
+import 'package:material_ui/material_ui.dart';
 
 class LoginScreen extends StatefulWidget {
   final IUserRepository authRepository;

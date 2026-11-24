@@ -1,8 +1,10 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_app/domain/models/routine.dart';
 import 'package:flutter_app/domain/validators/routine_validator.dart';
 import 'package:flutter_app/ui/utils/routine_icons.dart';
+import 'package:flutter_app/ui/utils/time_parser.dart';
 import 'package:flutter_app/ui/widgets/input_text_field.dart';
+import 'package:flutter_app/ui/widgets/routine_icon_picker.dart';
+import 'package:material_ui/material_ui.dart';
 
 Future<Routine?> showRoutineFormDialog({
   required BuildContext context,
@@ -52,40 +54,10 @@ class _RoutineFormDialogState extends State<_RoutineFormDialog> {
     super.dispose();
   }
 
-  TimeOfDay _parseInitialTime(String raw) {
-    final trimmed = raw.trim().toUpperCase();
-    final match12 = RegExp(r'^(\d{1,2}):(\d{2})\s*(AM|PM)$')
-        .firstMatch(trimmed);
-    if (match12 != null) {
-      var hour = int.parse(match12.group(1)!);
-      final minute = int.parse(match12.group(2)!);
-      final period = match12.group(3)!;
-      if (period == 'PM' && hour != 12) {
-        hour += 12;
-      } else if (period == 'AM' && hour == 12) {
-        hour = 0;
-      }
-      if (hour >= 0 && hour < 24 && minute >= 0 && minute < 60) {
-        return TimeOfDay(hour: hour, minute: minute);
-      }
-    }
-
-    final match24 = RegExp(r'^(\d{1,2}):(\d{2})$').firstMatch(trimmed);
-    if (match24 != null) {
-      final hour = int.parse(match24.group(1)!);
-      final minute = int.parse(match24.group(2)!);
-      if (hour >= 0 && hour < 24 && minute >= 0 && minute < 60) {
-        return TimeOfDay(hour: hour, minute: minute);
-      }
-    }
-
-    return TimeOfDay.now();
-  }
-
   Future<void> _pickTime() async {
     final picked = await showTimePicker(
       context: context,
-      initialTime: _parseInitialTime(_timeController.text),
+      initialTime: TimeParser.parseOrNow(_timeController.text),
     );
     if (picked == null || !mounted) return;
     setState(() {
@@ -137,22 +109,16 @@ class _RoutineFormDialogState extends State<_RoutineFormDialog> {
                 controller: _titleController,
                 validator: RoutineValidator.validateTitle,
               ),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: TextFormField(
-                  controller: _timeController,
-                  readOnly: true,
-                  onTap: _pickTime,
-                  validator: RoutineValidator.validateTime,
-                  decoration: InputDecoration(
-                    labelText: 'Time',
-                    hintText: 'Tap to pick a time',
-                    border: const OutlineInputBorder(),
-                    suffixIcon: IconButton(
-                      icon: const Icon(Icons.access_time),
-                      onPressed: _pickTime,
-                    ),
-                  ),
+              CustomTextField(
+                label: 'Time',
+                hintText: 'Tap to pick a time',
+                controller: _timeController,
+                readOnly: true,
+                onTap: _pickTime,
+                validator: RoutineValidator.validateTime,
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.access_time),
+                  onPressed: _pickTime,
                 ),
               ),
               CustomTextField(
@@ -160,28 +126,9 @@ class _RoutineFormDialogState extends State<_RoutineFormDialog> {
                 controller: _subtitleController,
                 validator: RoutineValidator.validateSubtitle,
               ),
-              const Text('Icon'),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: RoutineIcons.icons.entries.map((entry) {
-                  final isSelected = _selectedIcon == entry.key;
-                  return ChoiceChip(
-                    label: Icon(
-                      entry.value,
-                      color: isSelected ? Colors.white : Colors.teal,
-                    ),
-                    selected: isSelected,
-                    showCheckmark: false,
-                    selectedColor: Colors.teal,
-                    onSelected: (_) {
-                      setState(() {
-                        _selectedIcon = entry.key;
-                      });
-                    },
-                  );
-                }).toList(),
+              RoutineIconPicker(
+                selectedIcon: _selectedIcon,
+                onSelected: (icon) => setState(() => _selectedIcon = icon),
               ),
             ],
           ),

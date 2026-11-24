@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_app/ui/widgets/centered_content.dart';
+import 'package:material_ui/material_ui.dart';
 
 class AuthLayout extends StatelessWidget {
   final Widget child;

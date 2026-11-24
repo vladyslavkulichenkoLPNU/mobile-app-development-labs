@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_app/domain/models/user.dart';
 import 'package:flutter_app/domain/repositories/i_user_repository.dart';
 import 'package:flutter_app/ui/widgets/centered_content.dart';
 import 'package:flutter_app/ui/widgets/confirm_dialog.dart';
+import 'package:material_ui/material_ui.dart';
 
 class UserProfileScreen extends StatefulWidget {
   final IUserRepository authRepository;

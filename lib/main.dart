@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_app/data/adapters/routine_adapter.dart';
 import 'package:flutter_app/data/adapters/user_adapter.dart';
 import 'package:flutter_app/data/repositories/hive_routine_repository.dart';
@@ -14,6 +13,7 @@ import 'package:flutter_app/ui/screens/registration_screen.dart';
 import 'package:flutter_app/ui/screens/starting_screen.dart';
 import 'package:flutter_app/ui/screens/user_profile_screen.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:material_ui/material_ui.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
