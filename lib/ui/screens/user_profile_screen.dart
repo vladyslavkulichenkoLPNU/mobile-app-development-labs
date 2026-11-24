@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/domain/models/user.dart';
 import 'package:flutter_app/domain/repositories/i_user_repository.dart';
+import 'package:flutter_app/ui/widgets/confirm_dialog.dart';
 
 class UserProfileScreen extends StatefulWidget {
   final IUserRepository authRepository;
@@ -34,42 +35,14 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   Future<void> _confirmLogout() async {
     if (_isLoggingOut) return;
 
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showConfirmDialog(
       context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: const Text('Log Out'),
-          content: const Text('Are you sure you want to log out?'),
-          actions: [
-            Row(
-              children: [
-                Expanded(
-                  child: TextButton(
-                    onPressed: () {
-                      Navigator.pop(dialogContext, false);
-                    },
-                    child: const Text('Cancel'),
-                  ),
-                ),
-                Expanded(
-                  child: TextButton(
-                    onPressed: () {
-                      Navigator.pop(dialogContext, true);
-                    },
-                    child: const Text(
-                      'Log Out',
-                      style: TextStyle(color: Colors.redAccent),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        );
-      },
+      title: 'Log Out',
+      content: 'Are you sure you want to log out?',
+      confirmLabel: 'Log Out',
     );
 
-    if (confirmed == true && mounted) {
+    if (confirmed && mounted) {
       await _handleLogout();
     }
   }

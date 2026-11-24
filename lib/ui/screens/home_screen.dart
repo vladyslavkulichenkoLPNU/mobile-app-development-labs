@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_app/domain/models/routine.dart';
 import 'package:flutter_app/domain/repositories/i_routine_repository.dart';
+import 'package:flutter_app/ui/widgets/confirm_dialog.dart';
 import 'package:flutter_app/ui/widgets/routine_card.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -94,40 +95,17 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      onPopInvokedWithResult: (didPop, result) {
+      onPopInvokedWithResult: (didPop, result) async {
         if (didPop) return;
-        showDialog<void>(
+        final shouldExit = await showConfirmDialog(
           context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Exit App'),
-              content: const Text('Are you sure you want to leave?'),
-              actions: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        child: const Text('Cancel'),
-                      ),
-                    ),
-                    const Expanded(
-                      child: TextButton(
-                        onPressed: SystemNavigator.pop,
-                        child: Text(
-                          'Exit',
-                          style: TextStyle(color: Colors.redAccent),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            );
-          },
+          title: 'Exit App',
+          content: 'Are you sure you want to leave?',
+          confirmLabel: 'Exit',
         );
+        if (shouldExit) {
+          await SystemNavigator.pop();
+        }
       },
       child: Scaffold(
         appBar: AppBar(
