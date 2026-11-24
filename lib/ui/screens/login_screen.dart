@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/domain/repositories/i_user_repository.dart';
+import 'package:flutter_app/domain/validators/auth_validator.dart';
 import 'package:flutter_app/ui/widgets/auth_layout.dart';
 import 'package:flutter_app/ui/widgets/input_text_field.dart';
 
@@ -17,6 +18,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
+  bool _isLoading = false;
   String? _errorMessage;
 
   @override
@@ -27,27 +29,37 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _handleLogin() async {
+    if (_isLoading) return;
+
     setState(() => _errorMessage = null);
 
     if (!_formKey.currentState!.validate()) return;
 
-    final success = await widget.authRepository.login(
-      _emailController.text.trim(),
-      _passwordController.text,
-    );
+    setState(() => _isLoading = true);
 
-    if (!mounted) return;
-
-    if (success) {
-      Navigator.pushNamedAndRemoveUntil(
-        context,
-        '/dashboard',
-        (Route<dynamic> route) => false,
+    try {
+      final success = await widget.authRepository.login(
+        _emailController.text.trim(),
+        _passwordController.text,
       );
-    } else {
-      setState(() {
-        _errorMessage = 'Invalid email or password.';
-      });
+
+      if (!mounted) return;
+
+      if (success) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/dashboard',
+          (Route<dynamic> route) => false,
+        );
+      } else {
+        setState(() {
+          _errorMessage = 'Invalid email or password.';
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -64,26 +76,13 @@ class _LoginScreenState extends State<LoginScreen> {
               label: 'Email',
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'Please enter your email';
-                }
-                if (!value.contains('@') || !value.contains('.')) {
-                  return 'Enter a valid email address';
-                }
-                return null;
-              },
+              validator: AuthValidator.validateEmail,
             ),
             CustomTextField(
               label: 'Password',
               isPassword: true,
               controller: _passwordController,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your password';
-                }
-                return null;
-              },
+              validator: AuthValidator.validateLoginPassword,
             ),
             if (_errorMessage != null) ...[
               Text(
@@ -94,11 +93,22 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 8),
             ],
             const SizedBox(height: 8),
-            ElevatedButton(onPressed: _handleLogin, child: const Text('Enter')),
+            ElevatedButton(
+              onPressed: _isLoading ? null : _handleLogin,
+              child: _isLoading
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('Enter'),
+            ),
             TextButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/register');
-              },
+              onPressed: _isLoading
+                  ? null
+                  : () {
+                      Navigator.pushNamed(context, '/register');
+                    },
               child: const Text("Don't have an account? Register"),
             ),
           ],

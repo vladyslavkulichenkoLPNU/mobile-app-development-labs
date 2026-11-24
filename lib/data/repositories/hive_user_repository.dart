@@ -10,7 +10,11 @@ class HiveUserRepository implements IUserRepository {
 
   @override
   Future<bool> login(String email, String password) async {
-    final user = _userBox.get(email);
+    final normalizedEmail = email.trim().toLowerCase();
+    if (normalizedEmail == _sessionKey) {
+      return false;
+    }
+    final user = _userBox.get(normalizedEmail);
     if (user == null || user.password != password) {
       return false;
     }
@@ -20,12 +24,18 @@ class HiveUserRepository implements IUserRepository {
 
   @override
   Future<bool> register(String name, String email, String password) async {
-    if (_userBox.containsKey(email)) {
+    final normalizedEmail = email.trim().toLowerCase();
+    if (normalizedEmail == _sessionKey ||
+        _userBox.containsKey(normalizedEmail)) {
       return false;
     }
 
-    final newUser = User(name: name, email: email, password: password);
-    await _userBox.put(email, newUser);
+    final newUser = User(
+      name: name.trim(),
+      email: normalizedEmail,
+      password: password,
+    );
+    await _userBox.put(normalizedEmail, newUser);
     await _userBox.put(_sessionKey, newUser);
     return true;
   }

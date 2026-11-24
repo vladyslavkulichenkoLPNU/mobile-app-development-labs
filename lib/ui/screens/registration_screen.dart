@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_app/domain/repositories/i_user_repository.dart';
+import 'package:flutter_app/domain/validators/auth_validator.dart';
 import 'package:flutter_app/ui/widgets/auth_layout.dart';
 import 'package:flutter_app/ui/widgets/input_text_field.dart';
 
@@ -19,6 +20,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
+  bool _isLoading = false;
   String? _errorMessage;
 
   @override
@@ -31,28 +33,38 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   }
 
   Future<void> _handleRegister() async {
+    if (_isLoading) return;
+
     setState(() => _errorMessage = null);
 
     if (!_formKey.currentState!.validate()) return;
 
-    final success = await widget.authRepository.register(
-      _nameController.text.trim(),
-      _emailController.text.trim(),
-      _passwordController.text,
-    );
+    setState(() => _isLoading = true);
 
-    if (!mounted) return;
-
-    if (success) {
-      Navigator.pushNamedAndRemoveUntil(
-        context,
-        '/dashboard',
-        (route) => false,
+    try {
+      final success = await widget.authRepository.register(
+        _nameController.text.trim(),
+        _emailController.text.trim(),
+        _passwordController.text,
       );
-    } else {
-      setState(() {
-        _errorMessage = 'User with this email already exists.';
-      });
+
+      if (!mounted) return;
+
+      if (success) {
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/dashboard',
+          (route) => false,
+        );
+      } else {
+        setState(() {
+          _errorMessage = 'User with this email already exists.';
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -76,61 +88,46 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             CustomTextField(
               label: 'Full Name',
               controller: _nameController,
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'Please enter your full name';
-                }
-                return null;
-              },
+              validator: AuthValidator.validateName,
             ),
             CustomTextField(
               label: 'Email',
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'Please enter an email';
-                }
-                if (!value.contains('@') || !value.contains('.')) {
-                  return 'Enter a valid email address';
-                }
-                return null;
-              },
+              validator: AuthValidator.validateEmail,
             ),
             CustomTextField(
               label: 'Password',
               isPassword: true,
               controller: _passwordController,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter a password';
-                }
-                if (value.length < 6) {
-                  return 'Password must be at least 6 characters';
-                }
-                return null;
-              },
+              validator: AuthValidator.validateRegistrationPassword,
             ),
             CustomTextField(
               label: 'Confirm Password',
               isPassword: true,
               controller: _confirmPasswordController,
-              validator: (value) {
-                if (value != _passwordController.text) {
-                  return 'Passwords do not match';
-                }
-                return null;
-              },
+              validator: (value) => AuthValidator.validateConfirmPassword(
+                value,
+                _passwordController.text,
+              ),
             ),
             const SizedBox(height: 8),
             ElevatedButton(
-              onPressed: _handleRegister,
-              child: const Text('Enter'),
+              onPressed: _isLoading ? null : _handleRegister,
+              child: _isLoading
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('Enter'),
             ),
             TextButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/login');
-              },
+              onPressed: _isLoading
+                  ? null
+                  : () {
+                      Navigator.pushNamed(context, '/login');
+                    },
               child: const Text('Already have an account? Login'),
             ),
           ],

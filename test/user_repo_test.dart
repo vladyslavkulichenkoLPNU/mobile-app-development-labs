@@ -48,6 +48,31 @@ void main() {
       ).called(1);
     });
 
+    test('normalizes email and trims name before persisting user', () async {
+      when(() => mockUserBox.containsKey(email)).thenReturn(false);
+      when(() => mockUserBox.put(any<dynamic>(), any<User>()))
+          .thenAnswer((_) async {});
+
+      final result = await authRepository.register(
+        '  Test User  ',
+        '  User@Example.COM  ',
+        password,
+      );
+
+      expect(result, isTrue);
+      verify(() => mockUserBox.containsKey(email)).called(1);
+      verify(
+        () => mockUserBox.put(
+          email,
+          any(
+            that: isA<User>()
+                .having((u) => u.name, 'name', name)
+                .having((u) => u.email, 'email', email),
+          ),
+        ),
+      ).called(1);
+    });
+
     test(
       'returns false and does not call put when email already exists',
       () async {
@@ -60,6 +85,17 @@ void main() {
         verifyNever(() => mockUserBox.put(any<dynamic>(), any<User>()));
       },
     );
+
+    test('returns false when email matches reserved session key', () async {
+      final result = await authRepository.register(
+        name,
+        '__current_session__',
+        password,
+      );
+
+      expect(result, isFalse);
+      verifyNever(() => mockUserBox.put(any<dynamic>(), any<User>()));
+    });
   });
 
   group('HiveUserRepository - login', () {
@@ -85,6 +121,20 @@ void main() {
       verify(() => mockUserBox.put(any<dynamic>(), any<User>())).called(1);
     });
 
+    test('normalizes email when looking up user on login', () async {
+      when(() => mockUserBox.get(email)).thenReturn(savedUser);
+      when(() => mockUserBox.put(any<dynamic>(), any<User>()))
+          .thenAnswer((_) async {});
+
+      final result = await authRepository.login(
+        '  User@Example.COM  ',
+        validPassword,
+      );
+
+      expect(result, isTrue);
+      verify(() => mockUserBox.get(email)).called(1);
+    });
+
     test('returns false when user does not exist in box', () async {
       when(() => mockUserBox.get(email)).thenReturn(null);
 
@@ -101,6 +151,41 @@ void main() {
 
       expect(result, isFalse);
       verify(() => mockUserBox.get(email)).called(1);
+    });
+  });
+
+  group('HiveUserRepository - session', () {
+    const sessionKey = '__current_session__';
+    const savedUser = User(
+      name: 'Test User',
+      email: 'user@example.com',
+      password: 'password123',
+    );
+
+    test('getCurrentUser returns stored user when session exists', () async {
+      when(() => mockUserBox.get(sessionKey)).thenReturn(savedUser);
+
+      final result = await authRepository.getCurrentUser();
+
+      expect(result, equals(savedUser));
+      verify(() => mockUserBox.get(sessionKey)).called(1);
+    });
+
+    test('getCurrentUser returns null when no session exists', () async {
+      when(() => mockUserBox.get(sessionKey)).thenReturn(null);
+
+      final result = await authRepository.getCurrentUser();
+
+      expect(result, isNull);
+      verify(() => mockUserBox.get(sessionKey)).called(1);
+    });
+
+    test('logout deletes the stored session key', () async {
+      when(() => mockUserBox.delete(sessionKey)).thenAnswer((_) async {});
+
+      await authRepository.logout();
+
+      verify(() => mockUserBox.delete(sessionKey)).called(1);
     });
   });
 }
