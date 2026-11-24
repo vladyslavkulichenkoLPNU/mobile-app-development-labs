@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_app/domain/constants/default_routines.dart';
 import 'package:flutter_app/domain/models/routine.dart';
 import 'package:flutter_app/domain/repositories/i_routine_repository.dart';
 import 'package:flutter_app/ui/utils/routine_icons.dart';
@@ -31,21 +30,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadRoutines() async {
     final fetchedRoutines = await widget.routineRepository.getAllRoutines();
-
-    if (fetchedRoutines.isEmpty) {
-      for (final routine in defaultRoutines) {
-        await widget.routineRepository.addRoutine(routine);
-      }
-      routines = List<Routine>.of(
-        await widget.routineRepository.getAllRoutines(),
-      );
-    } else {
-      routines = List<Routine>.of(fetchedRoutines);
-    }
-
     if (!mounted) return;
-
     setState(() {
+      routines = List<Routine>.of(fetchedRoutines);
       isLoading = false;
     });
   }
