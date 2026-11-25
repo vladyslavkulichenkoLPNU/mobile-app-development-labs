@@ -1,4 +1,5 @@
 import 'package:flutter_app/data/repositories/hive_user_repository.dart';
+import 'package:flutter_app/data/security/password_hasher.dart';
 import 'package:flutter_app/domain/models/user.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
@@ -42,7 +43,12 @@ void main() {
             that: isA<User>()
                 .having((u) => u.name, 'name', name)
                 .having((u) => u.email, 'email', email)
-                .having((u) => u.password, 'password', password),
+                .having((u) => u.password, 'not plaintext', isNot(password))
+                .having(
+                  (u) => PasswordHasher.verify(password, u.password),
+                  'verified hash',
+                  isTrue,
+                ),
           ),
         ),
       ).called(1);
@@ -103,10 +109,10 @@ void main() {
     const validPassword = 'correctPassword';
     const wrongPassword = 'invalidPassword';
 
-    const savedUser = User(
+    final savedUser = User(
       name: 'Test User',
       email: email,
-      password: validPassword,
+      password: PasswordHasher.hash(validPassword),
     );
 
     test('returns true when user exists and password matches', () async {
@@ -148,6 +154,20 @@ void main() {
       when(() => mockUserBox.get(email)).thenReturn(savedUser);
 
       final result = await authRepository.login(email, wrongPassword);
+
+      expect(result, isFalse);
+      verify(() => mockUserBox.get(email)).called(1);
+    });
+
+    test('returns false when stored password is not a valid hash', () async {
+      const plaintextUser = User(
+        name: 'Test User',
+        email: email,
+        password: validPassword,
+      );
+      when(() => mockUserBox.get(email)).thenReturn(plaintextUser);
+
+      final result = await authRepository.login(email, validPassword);
 
       expect(result, isFalse);
       verify(() => mockUserBox.get(email)).called(1);

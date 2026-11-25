@@ -1,3 +1,4 @@
+import 'package:flutter_app/data/security/password_hasher.dart';
 import 'package:flutter_app/domain/models/user.dart';
 import 'package:flutter_app/domain/repositories/i_user_repository.dart';
 import 'package:hive/hive.dart';
@@ -15,7 +16,7 @@ class HiveUserRepository implements IUserRepository {
       return false;
     }
     final user = _userBox.get(normalizedEmail);
-    if (user == null || user.password != password) {
+    if (user == null || !PasswordHasher.verify(password, user.password)) {
       return false;
     }
     await _userBox.put(_sessionKey, user);
@@ -33,7 +34,7 @@ class HiveUserRepository implements IUserRepository {
     final newUser = User(
       name: name.trim(),
       email: normalizedEmail,
-      password: password,
+      password: PasswordHasher.hash(password),
     );
     await _userBox.put(normalizedEmail, newUser);
     await _userBox.put(_sessionKey, newUser);
